@@ -33,3 +33,14 @@ COMMANDLINE_LIBRARY = $(strip $(if $(wildcard \
 
 # Readline is broken or you don't want use it:
 #COMMANDLINE_LIBRARY = EPICS
+
+# It makes sense to include debugging symbols even in optimized builds
+# in case you want to attach gdb to the process or examine a core-dump.
+# This does cost disk space, but not memory as debug symbols are not
+# loaded into RAM when the binary is loaded.
+OPT_CFLAGS_YES += -g
+OPT_CXXFLAGS_YES += -g
+
+# give the path to the cross-compiler
+GNU_TARGET=arm-linux-gnueabihf
+GNU_DIR=${GCC_ARM_FQ_DIR}
