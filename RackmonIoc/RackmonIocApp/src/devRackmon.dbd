@@ -1,0 +1,16 @@
+# Defines devices provided by the Rackmon device support library.
+#
+# This file should come after "base.dbd" in the list of dbd files specified
+# for the RackmonIoc dbd, i.e., the Makefile should (and does as of
+# this writing) contain lines like
+#
+#   RackmonIoc_DBD += base.dbd
+#   RackmonIoc_DBD += devRackmon.dbd
+#
+# in that order.
+
+device(ai,CONSTANT,devAiDS1621,"DS1621")
+device(ao,CONSTANT,devAoDS1621,"DS1621")
+device(bi,CONSTANT,devBiRackProt,"RackProt")
+#device(ai,CONSTANT,devAiCustomTach,"CustomTach")
+

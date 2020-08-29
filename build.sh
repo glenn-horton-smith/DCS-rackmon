@@ -8,7 +8,7 @@ function die {
 
 source setup_dcs.sh || die
 
-for dir in epics-base asyn calc StreamDevice # SlowMonConBoxIocApp;
+for dir in epics-base asyn calc StreamDevice RackmonIoc;
 do
     ( cd $dir && make ) || die
 done

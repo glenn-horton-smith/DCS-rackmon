@@ -1,0 +1,82 @@
+##################################################
+# Tektronix DPO 3034
+# August 2015
+# G. Horton-Smith
+# Assumes scope is in protocol mode "None" such that
+# there are no ">" prompts or various other things going on.
+##################################################
+
+# General Settings
+Terminator = LF;
+ReplyTimeout = 1000; 
+
+
+# Get functions
+
+# /// Read the device ID (only displays 57 chars)
+getID {
+   ExtraInput = Ignore;
+   out "DCL";
+   out "*IDN?";
+   wait 50;
+   out "!r";
+   in "%57c";
+}
+
+# /// read WFMOutpre paramters such as YMULT, YOFF, YZERO (but not WFID)
+# /// for waveform of a specified source.
+# /// Syntax: getWFMOutpre(source,variable)
+# /// Example: getWFMOutpre(CH1,YMULT) will set :DATA:SOURCE CH1,
+# ///   then retrieve :WFMOutpre:YMULT?
+getWFMOutpre {
+   ExtraInput = Ignore;
+   out ":DATA:SOURCE \$1";
+   out ":WFMOutpre:\$2?";
+   wait 50;
+   out "!r";
+   in "%f";
+}
+
+# /// read WFMOutpre_WFID info
+# /// for waveform of a specified source.
+# /// Syntax: getWFMOutpre(source)
+getWFMOutpre_WFID {
+   ExtraInput = Ignore;
+   out ":DATA:SOURCE \$1";
+   out ":WFMOutpre:WFID?";
+   wait 50;
+   out "!r";
+   in "%#s";
+}
+
+# /// read TRIG info for specified trigger
+# /// syntax: getTRIG(A) or getTRIG(B)
+getTRIG {
+   ExtraInput = Ignore;
+   out ":TRIG:\$1?";
+   wait 50;
+   out "!r";
+   in "%#s";
+}
+
+# /// routine for initializing waveform output to right format
+setWFMOutpre {
+  out ":WFMOUTPRE:BYT_NR 1;BIT_NR 8;ENCDG BINARY;BN_FMT RI;BYT_OR MSB;NR_PT 10000;PT_OFF 0\n";
+  ExtraInput = Ignore;
+}
+
+# /// read the waveform info (10000 bytes)
+# /// for waveform of a specified source.
+# /// Syntax: getCurve(source)
+getCurve {
+   ExtraInput = Ignore;
+   InTerminator = "";
+   MaxInput = 10007;
+   out ":DATA:SOURCE \$1";
+   out ":WFMOUTPRE:BYT_NR 1;BIT_NR 8;ENCDG BINARY;BN_FMT RI;BYT_OR MSB;NR_PT 10000;PT_OFF 0\n";
+   out ":CURVE?";
+   wait 50;
+   out "!r";
+   in "%*[ \n\r]#510000%10000C";
+   #@readtimeout { out "DCL"; }
+}

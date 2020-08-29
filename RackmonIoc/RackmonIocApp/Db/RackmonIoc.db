@@ -1,0 +1,304 @@
+# This file contains test records for RackProt and RackTemps.
+
+
+# Rack protection system status
+# Rack protection status bit for each crate
+# "Test rack" for development and testing
+# 
+
+record(bi, "$(detector)_RackProt_TEST_1_0/state")
+{
+        field(DTYP,"RackProt")
+	field(INP,"1")
+	field(SCAN,".5 second")
+        field(DESC,"Rack Protection Status")
+	field(ZNAM,"NOT_GOOD")
+	field(ONAM,"Good")
+	field(ZSV,"MAJOR")
+	field(OSV,"NO_ALARM")
+	field(COSV,"NO_ALARM")
+}
+
+# Rack temperatures
+# 4 Temperature monitoring devices mounted in each rack
+# "Test rack" for development and testing
+# 
+
+record(ai, "$(detector)_RackTemps_TEST_1_0/temperature")
+{
+        field(DTYP,"DS1621")
+	field(INP,"0")
+	field(SCAN,"5 second")
+        field(EGU,"degC")
+        field(DESC,"Temperature probe 0")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_1/temperature")
+{
+        field(DTYP,"DS1621")
+	field(INP,"1")
+	field(SCAN,"5 second")
+        field(EGU,"degC")
+        field(DESC,"Temperature probe 1")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_2/temperature")
+{
+        field(DTYP,"DS1621")
+	field(INP,"2")
+	field(SCAN,"5 second")
+        field(EGU,"degC")
+        field(DESC,"Temperature probe 2")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_3/temperature")
+{
+        field(DTYP,"DS1621")
+	field(INP,"3")
+	field(SCAN,"5 second")
+        field(EGU,"degC")
+        field(DESC,"Temperature probe 3")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+
+record(ai, "$(detector)_RackTemps_TEST_1_0/T_high")
+{
+        field(DTYP,"DS1621")
+	field(INP,"0 H")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T high trip level 0")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_1/T_high")
+{
+        field(DTYP,"DS1621")
+	field(INP,"1 H")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T high trip level 1")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_2/T_high")
+{
+        field(DTYP,"DS1621")
+	field(INP,"2 H")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T high trip level 2")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_3/T_high")
+{
+        field(DTYP,"DS1621")
+	field(INP,"3 H")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T high trip level 3")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+
+record(ai, "$(detector)_RackTemps_TEST_1_0/T_low")
+{
+        field(DTYP,"DS1621")
+	field(INP,"0 L")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T low reset level 0")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_1/T_low")
+{
+        field(DTYP,"DS1621")
+	field(INP,"1 L")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T low reset level 1")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_2/T_low")
+{
+        field(DTYP,"DS1621")
+	field(INP,"2 L")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T low reset level 2")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_3/T_low")
+{
+        field(DTYP,"DS1621")
+	field(INP,"3 L")
+	field(SCAN,"10 second")
+        field(EGU,"degC")
+        field(DESC,"T low reset level 3")
+	field(HIHI,"35")
+	field(HIGH,"30")
+	field(LOW,"15")
+	field(LOLO,"10")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+
+record(ai, "$(detector)_RackTemps_TEST_1_0/configbyte")
+{
+        field(DTYP,"DS1621")
+	field(INP,"0 C")
+	field(SCAN,"10 second")
+        field(EGU,"")
+        field(DESC,"T config status byte 0")
+	field(HIHI,"255.5")
+	field(HIGH,"255.5")
+	field(LOW,"-0.5")
+	field(LOLO,"-0.5")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_1/configbyte")
+{
+        field(DTYP,"DS1621")
+	field(INP,"1 C")
+	field(SCAN,"10 second")
+        field(EGU,"")
+        field(DESC,"T config status byte 1")
+	field(HIHI,"255.5")
+	field(HIGH,"255.5")
+	field(LOW,"-0.5")
+	field(LOLO,"-0.5")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_2/configbyte")
+{
+        field(DTYP,"DS1621")
+	field(INP,"2 C")
+	field(SCAN,"10 second")
+        field(EGU,"")
+        field(DESC,"T config status byte 2")
+	field(HIHI,"255.5")
+	field(HIGH,"255.5")
+	field(LOW,"-0.5")
+	field(LOLO,"-0.5")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+record(ai, "$(detector)_RackTemps_TEST_1_3/configbyte")
+{
+        field(DTYP,"DS1621")
+	field(INP,"3 C")
+	field(SCAN,"10 second")
+        field(EGU,"")
+        field(DESC,"T config status byte 3")
+	field(HIHI,"255.5")
+	field(HIGH,"255.5")
+	field(LOW,"-0.5")
+	field(LOLO,"-0.5")
+	field(LLSV, MAJOR)
+	field(LSV, MINOR)
+	field(HSV, MINOR)
+	field(HHSV, MAJOR)
+}
+
+
+
+# end of db file for testing rackmonbox
