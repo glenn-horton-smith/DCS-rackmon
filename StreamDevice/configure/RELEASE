@@ -17,12 +17,16 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 SUPPORT=$(TOP)/..
 -include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
 
-ASYN=$(SUPPORT)/asyn4-36
-CALC=$(SUPPORT)/calc-3-7
-PCRE=$(SUPPORT)/pcre-7-2
+ASYN=$(SUPPORT)/asyn
+CALC=$(SUPPORT)/calc
+#PCRE=$(SUPPORT)/pcre
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/usr/local/epics/base-7.0.3
+######################
+## for easy configuration, EPICS_BASE should already be set by user in
+## environment, not hardcoded here
+######################
+EPICS_BASE := ${EPICS_BASE}
 
 # These lines allow developers to override these RELEASE settings
 # without having to modify this file directly.
