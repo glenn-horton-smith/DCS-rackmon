@@ -1,0 +1,8 @@
+git subtree add --prefix=asyn  https://github.com/epics-modules/asyn.git master --squash --message='adding asyn subtree from https://github.com/epics-modules/asyn.git'
+git subtree pull --prefix=asyn  https://github.com/epics-modules/asyn.git tags/R4-40-1 --squash
+
+git subtree add --prefix=calc  https://github.com/epics-modules/calc.git master --squash --message='adding calc subtree from https://github.com/epics-modules/calc.git'
+git subtree pull --prefix=calc  https://github.com/epics-modules/calc.git tags/R3-7-4 --squash
+
+git subtree add --prefix=StreamDevice  https://github.com/paulscherrerinstitute/StreamDevice.git  master --squash --message='adding StreamDevice subtree from https://github.com/paulscherrerinstitute/StreamDevice.git'
+git subtree pull --prefix=StreamDevice  https://github.com/paulscherrerinstitute/StreamDevice.git  tags/2.8.16 --squash 
