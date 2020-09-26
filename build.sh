@@ -16,9 +16,8 @@ done
 mkdir -p lib/linux-arm
 mkdir -p bin/linux-arm
 
+echo Making lib and bin symlinks
 ( cd lib/linux-arm && ln -sf ../../*/lib/linux-arm/* . ) || die
 ( cd bin/linux-arm && ln -sf ../../*/bin/linux-arm/* . ) || die
 
 
-
-    

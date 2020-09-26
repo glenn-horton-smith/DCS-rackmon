@@ -1,5 +1,5 @@
 /*************************************************************************\
- Device driver for reading DS1621 I2C thermometers on a Mu2e rack
+ Device driver for reading DS75 I2C thermometers on a Mu2e rack
  monitor device. Code runs on a BeagleBone black or equivalent linux
  computer with generic i2c-dev device support (/dev/i2c-2), and uses
  gpio pins to control a digital switch in the rack monitor which 
@@ -78,19 +78,20 @@ epicsExportAddress(dset, devAiRackTemp);
 /* Ai Record                                
  *   INP = a number in the range 0 to 63 equal to istub + 8*iprobe
  * where istub sets the i2c bus stub in range 0 to 7,
- * and iprobe selects the DS1621 address in range 0 to 7.
- *  (See DS1621 datasheet)      
- *        append "H" or "L" to read high or low thermostat threshold
+ * and iprobe selects the DS75 address in range 0 to 7.
+ *  (See DS75 datasheet)      
+ *        append "S" to read thermostat overtemp setpoint
+ *        append "Y" to read thermostat hysteresis
  *        append "C" to read config byte                            
  *        (default is to read current temperature)                  
 /************************************************************************/
 
 
 
-/** structure for private info for each DS1621 on bus.
+/** structure for private info for each DS75 on bus.
     Just store address for now. */
 #define MAX_ISTUB 7
-#define NCH_RACKTEMP (MAX_ISTUB+1)*(MAX_DS1621_ADDRESS+1)
+#define NCH_RACKTEMP (MAX_ISTUB+1)*(MAX_DS75_ADDRESS+1)
 static struct my_dpvt_s {
   int address;  // i2c address
   char what;    // what to read:  ' ' = temperature, H = high limit, L = low limit, C = config byte
@@ -185,17 +186,17 @@ static long read_ai(aiRecord *prec)
   if (select_probe(istub) < 0)
     ierr = -1;
   else if (what == ' ')
-    ierr = read_temp_ds1621( global_fd_i2c, addr,
+    ierr = read_temp_DS75( global_fd_i2c, addr,
                  &(prec->val) );
-  else if (what == 'H')
-    ierr = access_ds1621_details( global_fd_i2c, addr,
+  else if (what == 'S')
+    ierr = access_DS75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'r');
-  else if (what == 'L')
-    ierr = access_ds1621_details( global_fd_i2c, addr,
+  else if (what == 'Y')
+    ierr = access_DS75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
-    ierr = access_ds1621_details( global_fd_i2c, addr,
+    ierr = access_DS75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
@@ -264,15 +265,15 @@ static long init_record_ao(aoRecord *prec)
      "devRackTemp (init_record_ao) Invalid INP value, trying to write to temperature");
     return S_db_badField;
   }
-  else if (what == 'H')
-    status = access_ds1621_details( global_fd_i2c, addr,
+  else if (what == 'S')
+    status = access_DS75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'r');
-  else if (what == 'L')
-    status = access_ds1621_details( global_fd_i2c, addr,
+  else if (what == 'Y')
+    status = access_DS75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
-    status = access_ds1621_details( global_fd_i2c, addr,
+    status = access_DS75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
@@ -307,10 +308,10 @@ static long write_ao(aoRecord *prec)
   if (select_probe(istub) < 0)
     ierr = -1;
   else if (what == 'H')
-    ierr = access_ds1621_details( global_fd_i2c, addr,
+    ierr = access_DS75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'w');
   else if (what == 'L')
-    ierr = access_ds1621_details( global_fd_i2c, addr,
+    ierr = access_DS75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'w');
   else if (what == 'C') {
     unsigned char cfg;
@@ -318,7 +319,7 @@ static long write_ao(aoRecord *prec)
       ierr = 1;
     else {
       cfg = (unsigned char)(int)(0.5+prec->val);
-      ierr = access_ds1621_details( global_fd_i2c, addr,
+      ierr = access_DS75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'w');
     }
   }

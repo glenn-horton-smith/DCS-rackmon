@@ -30,6 +30,7 @@
 /* Constants for the I2C devices */
 const int
   I2C_DS1621_ADDR_BASE = 0x48,  /**< add 0-7 to get thermometers 0 through 7 */
+  I2C_DS75_ADDR_BASE = 0x48,  /**< add 0-7 to get thermometers 0 through 7 */
   I2C_TACHOMETER_ADDR = 0x0F;   /**< the one tachometer address */
 
 

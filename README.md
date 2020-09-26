@@ -14,12 +14,25 @@ Then
 <pre>
 source setup_dcs.sh
 </pre>
-to set up the paths and environment variables for compiling and running the EPICS libraries,
-and
+to set up the paths and environment variables for compiling and running the EPICS libraries.
+
+## Build
+
+Use
 <pre>
 ./build.sh
 </pre>
-to compile all components and move the libraries and executables into the to pleve.
+to compile all components and move the libraries and executables into the top level.
+
+## Deploy
+
+The script
+<pre>
+./make_tgz.sh
+</pre>
+will make a `tgz` directory and create two gzipped tar files in it named
+
+
 
 ## To Do
 
