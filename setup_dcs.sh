@@ -5,7 +5,7 @@ then
 fi
 
 export EPICS_BASE=$PWD/epics-base
-export EPICS_HOST_ARCH=`$EPICS_BASE/startup/EpicsHostArch`
+export EPICS_HOST_ARCH=`$EPICS_BASE/startup/EpicsHostArch debug`
 export PATH="$EPICS_BASE/bin/$EPICS_HOST_ARCH/:$PATH"
 
 # 

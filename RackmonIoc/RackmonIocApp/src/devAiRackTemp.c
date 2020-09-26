@@ -1,8 +1,11 @@
 /*************************************************************************\
- Device driver for reading DS1621 I2C thermometer on a linux machine
- with generic i2c-dev device support (/dev/i2c-0).
+ Device driver for reading DS1621 I2C thermometers on a Mu2e rack
+ monitor device. Code runs on a BeagleBone black or equivalent linux
+ computer with generic i2c-dev device support (/dev/i2c-2), and uses
+ gpio pins to control a digital switch in the rack monitor which 
+ selects one of six connected i2c bus stubs.
 
- Author: Glenn Horton-Smith, Kansas State University, 2013
+ Author: Glenn Horton-Smith, Kansas State University, 2013, 2020
 
  The EPICS interface is the copied from the devAiSoft device driver
  found in EPICS BASE. The devAiSoft.c file contains the following
@@ -45,9 +48,9 @@
 #include "epicsExport.h"
 
 #include "dev_i2c.h"
+#include "dev_gpio.h"
 
-
-/* Create the dset for devAiDS1621 */
+/* Create the dset for devAiRackTemp */
 static long init_record_ai(aiRecord *prec);
 static long read_ai(aiRecord *prec);
 
@@ -59,7 +62,7 @@ struct {
     DEVSUPFUN get_ioint_info;
     DEVSUPFUN read_ai;
     DEVSUPFUN special_linconv;
-} devAiDS1621 = {
+} devAiRackTemp = {
     6,
     NULL,
     NULL,
@@ -68,37 +71,53 @@ struct {
     read_ai,
     NULL
 };
-epicsExportAddress(dset, devAiDS1621);
+epicsExportAddress(dset, devAiRackTemp);
 
 
 /************************************************************************/
-/* Ai Record								*/
-/*  INP = address of DS1621 in range 0 to 7 (See DS1621 datasheet)      */
-/*        append "H" or "L" to read high or low thermostat threshold    */
-/*        append "C" to read config byte                                */
-/*        (default is to read current temperature)                      */
+/* Ai Record                                
+ *   INP = a number in the range 0 to 63 equal to istub + 8*iprobe
+ * where istub sets the i2c bus stub in range 0 to 7,
+ * and iprobe selects the DS1621 address in range 0 to 7.
+ *  (See DS1621 datasheet)      
+ *        append "H" or "L" to read high or low thermostat threshold
+ *        append "C" to read config byte                            
+ *        (default is to read current temperature)                  
 /************************************************************************/
-
 
 
 
 /** structure for private info for each DS1621 on bus.
-    Just store address for now. Only one bus supported for now. */
-#define NCH_DS1621 (MAX_DS1621_ADDRESS+1)
+    Just store address for now. */
+#define MAX_ISTUB 7
+#define NCH_RACKTEMP (MAX_ISTUB+1)*(MAX_DS1621_ADDRESS+1)
 static struct my_dpvt_s {
   int address;  // i2c address
   char what;    // what to read:  ' ' = temperature, H = high limit, L = low limit, C = config byte
-} private_data[NCH_DS1621*4];
+} private_data[NCH_RACKTEMP*4];
 
 
 /** global variable for the I2C bus file descriptor */
 static int global_fd_i2c = -1;
 
 
+/** internal function for selecting i2c bus stub for probe */
+int select_probe(int istub)
+{
+  if (istub < 0 || istub > 7)
+    return -1;
+  if (gpio_write(26 /*"P8_14"*/, istub & 1) < 0)
+    return -1;
+  if (gpio_write(46 /*"P8_16"*/, istub & 2) < 0)
+    return -1;
+  if (gpio_write(65 /*"P8_18"*/, istub & 4) < 0)
+    return -1;
+  return 0;
+}
 
 /* EPICS interface routines */
 
-/* helpr for initialization task common to all records for this device */
+/* helper for initialization task common to all records for this device */
 static long init_record_common(dbCommon *prec, const char *inp)
 {
     int inp_value = -1;
@@ -107,11 +126,11 @@ static long init_record_common(dbCommon *prec, const char *inp)
 
     /* check that fd is open to i2c device, open if necessary */
     if (global_fd_i2c < 0) {
-      global_fd_i2c = open_i2c_bus(0);
+      global_fd_i2c = open_i2c_bus(2);
       if (global_fd_i2c < 0) {
-	recGblRecordError(S_dev_badBus, (void *)prec,
-			  "devDS1621 (init_record) Could not open I2C bus");
-	return S_dev_badBus;
+    recGblRecordError(S_dev_badBus, (void *)prec,
+              "devRackTemp (init_record) Could not open I2C bus");
+    return S_dev_badBus;
       }
     }
 
@@ -119,28 +138,28 @@ static long init_record_common(dbCommon *prec, const char *inp)
 
     nconv = sscanf(inp, "%d %c", &inp_value, &inp_char);
     if (nconv > 0) {
-      if ( inp_value < 0 || inp_value > MAX_DS1621_ADDRESS ) {
-	recGblRecordError(S_db_badField, (void *)prec,
-			  "devDS1621 (init_record) Invalid INP value, out of range");
-	return S_db_badField;
+      if ( inp_value < 0 || inp_value >= NCH_RACKTEMP ) {
+    recGblRecordError(S_db_badField, (void *)prec,
+              "devRackTemp (init_record) Invalid INP value, out of range");
+    return S_db_badField;
       }
       else {
-	int i = inp_value;
-	if (inp_char == 'H')
-	  i += NCH_DS1621;
-	else if (inp_char == 'L')
-	  i += 2*NCH_DS1621;
-	else if (inp_char == 'C')
-	  i += 3*NCH_DS1621;
-	private_data[i].address = inp_value;
-	private_data[i].what = inp_char;
-	prec->dpvt = &( private_data[i] );
-	// -- delay setting prec->udf = FALSE until we have good data
+    int i = inp_value;
+    if (inp_char == 'H')
+      i += NCH_RACKTEMP;
+    else if (inp_char == 'L')
+      i += 2*NCH_RACKTEMP;
+    else if (inp_char == 'C')
+      i += 3*NCH_RACKTEMP;
+    private_data[i].address = inp_value;
+    private_data[i].what = inp_char;
+    prec->dpvt = &( private_data[i] );
+    // -- delay setting prec->udf = FALSE until we have good data
       }
     }
     else {
       recGblRecordError(S_db_badField, (void *)prec,
-			"devDS1621 (init_record) Invalid INP value, no number at start");
+            "devRackTemp (init_record) Invalid INP value, no number at start");
       return S_db_badField;
     }
 
@@ -158,22 +177,26 @@ static long init_record_ai(aiRecord *prec)
 static long read_ai(aiRecord *prec)
 {
   int ierr;
-  int addr = ((struct my_dpvt_s *)(prec->dpvt))->address;
+  int address = ((struct my_dpvt_s *)(prec->dpvt))->address;
+  int addr = address/(MAX_ISTUB+1);
+  int istub = address%(MAX_ISTUB+1);
   char what = ((struct my_dpvt_s *)(prec->dpvt))->what;
 
-  if (what == ' ')
+  if (select_probe(istub) < 0)
+    ierr = -1;
+  else if (what == ' ')
     ierr = read_temp_ds1621( global_fd_i2c, addr,
-			     &(prec->val) );
+                 &(prec->val) );
   else if (what == 'H')
     ierr = access_ds1621_details( global_fd_i2c, addr,
-				    &(prec->val), NULL, NULL, 'r');
+                    &(prec->val), NULL, NULL, 'r');
   else if (what == 'L')
     ierr = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, &(prec->val), NULL, 'r');
+                    NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
     ierr = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, NULL, &cfg, 'r');
+                    NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
   else {
@@ -194,7 +217,7 @@ static long read_ai(aiRecord *prec)
 /* ================================================================ */
 
   
-/* Create the dset for devAoDS1621 */
+/* Create the dset for devAoRackTemp */
 static long init_record_ao(aoRecord *prec);
 static long write_ao(aoRecord *prec);
 
@@ -206,7 +229,7 @@ struct {
   DEVSUPFUN       get_ioint_info;
   DEVSUPFUN       write_ao;
   DEVSUPFUN       special_linconv;
-} devAoDS1621 = {
+} devAoRackTemp = {
   6,
   NULL,
   NULL,
@@ -214,7 +237,7 @@ struct {
   NULL,
   write_ao,
   NULL};
-epicsExportAddress(dset,devAoDS1621);
+epicsExportAddress(dset,devAoRackTemp);
 
 
 /* initialization for ai record */
@@ -233,24 +256,24 @@ static long init_record_ao(aoRecord *prec)
      -- we can do that since device has persistant memory
      -- also check for weirdness like trying to make a channel
         to write to the temperature readback
-  */	
+  */    
   addr = ((struct my_dpvt_s *)(prec->dpvt))->address;
   what = ((struct my_dpvt_s *)(prec->dpvt))->what;
   if (what == ' ') {
     recGblRecordError(S_db_badField, (void *)prec,
-	 "devDS1621 (init_record_ao) Invalid INP value, trying to write to temperature");
+     "devRackTemp (init_record_ao) Invalid INP value, trying to write to temperature");
     return S_db_badField;
   }
   else if (what == 'H')
     status = access_ds1621_details( global_fd_i2c, addr,
-				    &(prec->val), NULL, NULL, 'r');
+                    &(prec->val), NULL, NULL, 'r');
   else if (what == 'L')
     status = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, &(prec->val), NULL, 'r');
+                    NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
     status = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, NULL, &cfg, 'r');
+                    NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
   else {
@@ -276,15 +299,19 @@ static long init_record_ao(aoRecord *prec)
 static long write_ao(aoRecord *prec)
 {
   int ierr;
-  int addr = ((struct my_dpvt_s *)(prec->dpvt))->address;
+  int address = ((struct my_dpvt_s *)(prec->dpvt))->address;
+  int addr = address/(MAX_ISTUB+1);
+  int istub = address%(MAX_ISTUB+1);
   char what = ((struct my_dpvt_s *)(prec->dpvt))->what;
 
-  if (what == 'H')
+  if (select_probe(istub) < 0)
+    ierr = -1;
+  else if (what == 'H')
     ierr = access_ds1621_details( global_fd_i2c, addr,
-				    &(prec->val), NULL, NULL, 'w');
+                    &(prec->val), NULL, NULL, 'w');
   else if (what == 'L')
     ierr = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, &(prec->val), NULL, 'w');
+                    NULL, &(prec->val), NULL, 'w');
   else if (what == 'C') {
     unsigned char cfg;
     if (prec->val < 0 || prec->val > 255)
@@ -292,7 +319,7 @@ static long write_ao(aoRecord *prec)
     else {
       cfg = (unsigned char)(int)(0.5+prec->val);
       ierr = access_ds1621_details( global_fd_i2c, addr,
-				    NULL, NULL, &cfg, 'w');
+                    NULL, NULL, &cfg, 'w');
     }
   }
   else {

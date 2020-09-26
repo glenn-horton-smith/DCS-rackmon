@@ -26,7 +26,7 @@ record(bi, "$(detector)_RackProt_TEST_1_0/state")
 
 record(ai, "$(detector)_RackTemps_TEST_1_0/temperature")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"0")
 	field(SCAN,"5 second")
         field(EGU,"degC")
@@ -43,7 +43,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_0/temperature")
 
 record(ai, "$(detector)_RackTemps_TEST_1_1/temperature")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"1")
 	field(SCAN,"5 second")
         field(EGU,"degC")
@@ -60,7 +60,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_1/temperature")
 
 record(ai, "$(detector)_RackTemps_TEST_1_2/temperature")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"2")
 	field(SCAN,"5 second")
         field(EGU,"degC")
@@ -77,7 +77,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_2/temperature")
 
 record(ai, "$(detector)_RackTemps_TEST_1_3/temperature")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"3")
 	field(SCAN,"5 second")
         field(EGU,"degC")
@@ -95,7 +95,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_3/temperature")
 
 record(ai, "$(detector)_RackTemps_TEST_1_0/T_high")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"0 H")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -112,7 +112,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_0/T_high")
 
 record(ai, "$(detector)_RackTemps_TEST_1_1/T_high")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"1 H")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -129,7 +129,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_1/T_high")
 
 record(ai, "$(detector)_RackTemps_TEST_1_2/T_high")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"2 H")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -146,7 +146,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_2/T_high")
 
 record(ai, "$(detector)_RackTemps_TEST_1_3/T_high")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"3 H")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -164,7 +164,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_3/T_high")
 
 record(ai, "$(detector)_RackTemps_TEST_1_0/T_low")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"0 L")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -181,7 +181,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_0/T_low")
 
 record(ai, "$(detector)_RackTemps_TEST_1_1/T_low")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"1 L")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -198,7 +198,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_1/T_low")
 
 record(ai, "$(detector)_RackTemps_TEST_1_2/T_low")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"2 L")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -215,7 +215,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_2/T_low")
 
 record(ai, "$(detector)_RackTemps_TEST_1_3/T_low")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"3 L")
 	field(SCAN,"10 second")
         field(EGU,"degC")
@@ -233,7 +233,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_3/T_low")
 
 record(ai, "$(detector)_RackTemps_TEST_1_0/configbyte")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"0 C")
 	field(SCAN,"10 second")
         field(EGU,"")
@@ -250,7 +250,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_0/configbyte")
 
 record(ai, "$(detector)_RackTemps_TEST_1_1/configbyte")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"1 C")
 	field(SCAN,"10 second")
         field(EGU,"")
@@ -267,7 +267,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_1/configbyte")
 
 record(ai, "$(detector)_RackTemps_TEST_1_2/configbyte")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"2 C")
 	field(SCAN,"10 second")
         field(EGU,"")
@@ -284,7 +284,7 @@ record(ai, "$(detector)_RackTemps_TEST_1_2/configbyte")
 
 record(ai, "$(detector)_RackTemps_TEST_1_3/configbyte")
 {
-        field(DTYP,"DS1621")
+        field(DTYP,"RackTemp")
 	field(INP,"3 C")
 	field(SCAN,"10 second")
         field(EGU,"")

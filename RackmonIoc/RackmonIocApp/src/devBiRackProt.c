@@ -16,6 +16,7 @@
 #include "biRecord.h"
 #include "epicsExport.h"
 
+#include "dev_gpio.h"
 
 /* Create the dset for devBiRackProt */
 static long init_record(biRecord *prec);
@@ -62,24 +63,25 @@ static long init_record(biRecord *prec)
 static long read_bi(biRecord *prec)
 {
   int istat=-1;
-  unsigned int state = 0;
-  /* hard-coded to gpio1[28] for now (pin 12 on P9 of BeagleBone Black) */
-  FILE *f = fopen("/sys/class/gpio/gpio60/value","r");
-  if (f) {
-    istat = fscanf(f,"%d",&state);
-    fclose(f);
-  }
-  if (istat == 1) {
+  /* hard-coded gpio 44 for now (pin 12 on P8 of BeagleBone Black) */
+  istat = gpio_read(44);
+  if (istat >= 0) {
     // set the value of the variable
-    if (state == 0 && prec->val != 0)
+    if (istat == 0 && prec->val != 0)
       errlogPrintf("RackProt bit is zero for %s\n", prec->name);
-    prec->val = state;
+    prec->val = istat;
     prec->udf = FALSE;
+    /* flash heartbeat normally. heartbeat gpio hard-coded for now */
+    hb_sequence_counter++;
+    gpio_write(45, hb_sequence_counter%2);
     return 2;  /* 2: succesful read, do not convert */    
   }
   else {
     // indicate undefined value
     prec->udf = TRUE;
+    /* flash heartbeat irregularly. heartbeat gpio hard-coded for now */
+    hb_sequence_counter++;
+    gpio_write(45, (308404&(1<<(20-hb_sequence_counter%21)))!=0 );
     return -1; /* error */
   }
 }

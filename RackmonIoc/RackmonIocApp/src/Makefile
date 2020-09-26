@@ -8,7 +8,7 @@ include $(TOP)/configure/CONFIG
 #-- macros related to making a device support library
 LIBRARY_IOC += devRackmon
 DBD += devRackmon.dbd
-devRackmon_SRCS += devDS1621.c devBiRackProt.c dev_i2c.c 
+devRackmon_SRCS += devAiRackTemp.c devBiRackProt.c dev_i2c.c dev_gpio.c
 devRackmon_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 

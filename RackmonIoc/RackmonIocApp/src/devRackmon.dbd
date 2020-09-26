@@ -9,8 +9,8 @@
 #
 # in that order.
 
-device(ai,CONSTANT,devAiDS1621,"DS1621")
-device(ao,CONSTANT,devAoDS1621,"DS1621")
+device(ai,CONSTANT,devAiRackTemp,"RackTemp")
+device(ao,CONSTANT,devAoRackTemp,"RackTemp")
 device(bi,CONSTANT,devBiRackProt,"RackProt")
 #device(ai,CONSTANT,devAiCustomTach,"CustomTach")
 
