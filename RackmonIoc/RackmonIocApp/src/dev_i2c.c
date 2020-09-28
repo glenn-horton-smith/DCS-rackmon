@@ -1,9 +1,9 @@
 /*************************************************************************\
- Support for reading DS1621 I2C thermometer and/or
+ Support for reading DS1621 I2C thermometer, DS75 I2C, and
  MicroBooNE custom fan tachometer on I2C bus at address 0x0f, 
- on any linux machine with generic i2c-dev device support (/dev/i2c-0).
+ on any linux machine with generic i2c-dev device support (/dev/i2c-n).
 
- Author: Glenn Horton-Smith, Kansas State University, 2013
+ Author: Glenn Horton-Smith, Kansas State University, 2013, 2020
 \*************************************************************************/
 
 #include <stdlib.h>
@@ -54,9 +54,9 @@ open_i2c_bus(int bus /**< bus number, 0 for first (or only) bus */ )
     Returns 0 on success, negative value on error. */
 int
 read_temp_ds1621( int fd,          /**< file descriptor for i2c bus device */
-		  int addr,        /**< 3-bit address of the ds1621 */
-		  double *T_degC   /**< destination for temperature, degC */
-		  )
+          int addr,        /**< 3-bit address of the ds1621 */
+          double *T_degC   /**< destination for temperature, degC */
+          )
 {
   int status; // used for return value from i/o functions and this function
   char buf[4]; // I/O buffer
@@ -111,12 +111,12 @@ read_temp_ds1621( int fd,          /**< file descriptor for i2c bus device */
     Returns 0 on success, negative value on error. */
 int
 access_ds1621_details( int fd,         /**< file descriptor for i2c bus device */
-		     int addr,       /**< 3-bit address of the ds1261 */
-		     double *TH,     /**< src/dest for TH, degC */
-		     double *TL,     /**< src/dest for TH, degC */
-		     unsigned char *cfg,  /**< src/dest for config byte */
-		     char mode       /**< 'w' for write, otherwise read */
-		     )
+             int addr,       /**< 3-bit address of the ds1261 */
+             double *TH,     /**< src/dest for TH, degC */
+             double *TL,     /**< src/dest for TH, degC */
+             unsigned char *cfg,  /**< src/dest for config byte */
+             char mode       /**< 'w' for write, otherwise read */
+             )
 {
   int status; // used for return value from i/o functions
   int t256;    // temperature in (1/256) degC units
@@ -143,7 +143,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       buf[2] = t256&(0xff);
       status = write(fd, buf, 3);
       if (status != 3)
-	RETURN(-1);
+        RETURN(-1);
       nanosleep(&ts, 0);
     }
     // write TL to 0xA2
@@ -154,7 +154,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       buf[2] = t256&(0xff);
       status = write(fd, buf, 3);
       if (status != 3)
-	RETURN(-1);
+        RETURN(-1);
       nanosleep(&ts, 0);
     }
     // write cfg to 0xAC
@@ -163,7 +163,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       buf[1] = *cfg;
       status = write(fd, buf, 2);
       if (status != 2)
-	RETURN(-1);
+        RETURN(-1);
       nanosleep(&ts, 0);
     }
   }
@@ -174,7 +174,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       status = write(fd, buf, 1);
       status += read(fd, buf, 2);
       if (status != 3)
-	RETURN(-1);
+        RETURN(-1);
       *TH =  buf[0] + buf[1]/256.0;
     }
     // read TL from 0xA2
@@ -183,7 +183,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       status = write(fd, buf, 1);
       status += read(fd, buf, 2);
       if (status != 3)
-	RETURN(-1);
+        RETURN(-1);
       *TL =  buf[0] + buf[1]/256.0;
     }
     // read cfg from 0xAC
@@ -192,7 +192,7 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
       status = write(fd, buf, 1);
       status += read(fd, buf, 1);
       if (status != 2)
-	RETURN(-1);
+        RETURN(-1);
       *cfg = buf[0];
     }
   }
@@ -208,6 +208,161 @@ access_ds1621_details( int fd,         /**< file descriptor for i2c bus device *
   return status;
 }
 
+
+/*--- code for DS75 temperature probe ---*/
+
+/** read temperature from specified DS75.
+    Returns 0 on success, negative value on error. */
+int
+read_temp_ds75( int fd,          /**< file descriptor for i2c bus device */
+          int addr,        /**< 3-bit address of the ds75 */
+          double *T_degC   /**< destination for temperature, degC */
+          )
+{
+  int status; // used for return value from i/o functions and this function
+  char buf[4]; // I/O buffer
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !! begin protected section.  No "returns" allowed in code below,
+  // !! or else mutex might not get unlocked.  Beware!!!!!!!!!!!!!!!!
+#define RETURN(s) { status=s; goto RETURN; }
+  pthread_mutex_lock(&i2c_mutex);
+
+  // tell bus who we want to talk to
+  status = ioctl(fd, I2C_SLAVE, I2C_DS75_ADDR_BASE+(addr&7) );
+  if (status < 0)
+    RETURN(status);
+
+  // read temperature data from register 0x00
+  buf[0] = 0x00;
+  status = write(fd, buf, 1);
+  if (status != 1)
+    RETURN(-1);
+  status = read(fd, buf, 2);
+  if (status != 2)
+    RETURN(-1);
+  
+  // store temperature and return
+  *T_degC =  buf[0] + buf[1]/256.0;
+  status = 0;
+
+  // !! End of protected section
+#undef RETURN
+ RETURN:
+  pthread_mutex_unlock(&i2c_mutex);
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+  
+  return status;
+}
+
+
+/** read or write thresholds T_OS and T_HYST and config byte from 
+    specified DS75.  (T_OS is the overtemp trip threshold, and T_HYST 
+    is the overtemp reset threshold. See DS75 datasheet.)
+    Any pointer argument may be null, in which case the corresponding
+    quantity is not read from or written to the ds75.
+    Returns 0 on success, negative value on error. */
+int
+access_ds75_details( int fd,         /**< file descriptor for i2c bus device */
+             int addr,         /**< 3-bit address of the ds1261 */
+             double *T_OS,     /**< src/dest for T_OS, degC */
+             double *T_HYST,   /**< src/dest for T_HYST, degC */
+             unsigned char *cfg,  /**< src/dest for config byte */
+             char mode         /**< 'w' for write, otherwise read */
+             )
+{
+  int status; // used for return value from i/o functions
+  int t256;    // temperature in (1/256) degC units
+  char buf[4]; // I/O buffer
+  struct timespec ts = {0,11000000};  // 10 ms sleep required after write
+ 
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !! begin protected section.  No "returns" allowed in code below,
+  // !! or else mutex might not get unlocked.  Beware!!!!!!!!!!!!!!!!
+#define RETURN(s) { status=s; goto RETURN; }
+  pthread_mutex_lock(&i2c_mutex);
+
+  // tell bus who we want to talk to
+  status = ioctl(fd, I2C_SLAVE, I2C_DS75_ADDR_BASE+addr);
+  if (status < 0)
+    RETURN(status);
+
+  if (mode == 'w') {
+    // write T_OS to register 3
+    if (T_OS) {
+      t256 = (int)( (*T_OS)*256 + 0.5 );
+      buf[0] = 3;
+      buf[1] = t256>>8;
+      buf[2] = t256&(0xff);
+      status = write(fd, buf, 3);
+      if (status != 3)
+        RETURN(-1);
+      nanosleep(&ts, 0);
+    }
+    // write TL to register 2
+    if (T_HYST) {
+      t256 = (int)( (*T_HYST)*256 + 0.5 );
+      buf[0] = 2;
+      buf[1] = t256>>8;
+      buf[2] = t256&(0xff);
+      status = write(fd, buf, 3);
+      if (status != 3)
+        RETURN(-1);
+      nanosleep(&ts, 0);
+    }
+    // write cfg to register 1
+    if (cfg) {
+      buf[0] = 1;
+      buf[1] = *cfg;
+      status = write(fd, buf, 2);
+      if (status != 2)
+        RETURN(-1);
+      nanosleep(&ts, 0);
+    }
+  }
+  else {
+    // read T_OS from register 3
+    if (T_OS) {
+      buf[0] = 3;
+      status = write(fd, buf, 1);
+      status += read(fd, buf, 2);
+      if (status != 3)
+        RETURN(-1);
+      *T_OS =  buf[0] + buf[1]/256.0;
+    }
+    // read T_HYST from register 2
+    if (T_HYST) {
+      buf[0] = 2;
+      status = write(fd, buf, 1);
+      status += read(fd, buf, 2);
+      if (status != 3)
+        RETURN(-1);
+      *T_HYST =  buf[0] + buf[1]/256.0;
+    }
+    // read cfg from register 1
+    if (cfg) {
+      buf[0] = 1;
+      status = write(fd, buf, 1);
+      status += read(fd, buf, 1);
+      if (status != 2)
+        RETURN(-1);
+      *cfg = buf[0];
+    }
+  }
+
+  status = 0;
+
+  // !! End of protected section
+#undef RETURN
+ RETURN:
+  pthread_mutex_unlock(&i2c_mutex);
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  return status;
+}
+
+
+/*--- code for Dave Huffman's PIC-based tachometer for MicroBooNE ---*/
 
 /** read speed of 12 fans from the PIC-based tachometer (Dave Huffman version) 
     Input array for rpm should be initialized.
@@ -261,9 +416,9 @@ f12=0000
 */
 int
 read_fan_speeds( int fd,          /**< file descriptor for i2c bus device */
-		 double *rpm,     /**< destination for speed values, rpm */
-		 int n_fan        /**< number of speed values to save */
-		)
+         double *rpm,     /**< destination for speed values, rpm */
+         int n_fan        /**< number of speed values to save */
+        )
 {
   int status;      // used for return value from i/o functions
   char buf[16];    // I/O buffer for short exchanges

@@ -74,8 +74,8 @@ struct {
 epicsExportAddress(dset, devAiRackTemp);
 
 
-/************************************************************************/
-/* Ai Record                                
+/************************************************************************
+ * Ai Record                                
  *   INP = a number in the range 0 to 63 equal to istub + 8*iprobe
  * where istub sets the i2c bus stub in range 0 to 7,
  * and iprobe selects the DS75 address in range 0 to 7.
@@ -84,7 +84,7 @@ epicsExportAddress(dset, devAiRackTemp);
  *        append "Y" to read thermostat hysteresis
  *        append "C" to read config byte                            
  *        (default is to read current temperature)                  
-/************************************************************************/
+ ************************************************************************/
 
 
 
@@ -186,17 +186,17 @@ static long read_ai(aiRecord *prec)
   if (select_probe(istub) < 0)
     ierr = -1;
   else if (what == ' ')
-    ierr = read_temp_DS75( global_fd_i2c, addr,
+    ierr = read_temp_ds75( global_fd_i2c, addr,
                  &(prec->val) );
   else if (what == 'S')
-    ierr = access_DS75_details( global_fd_i2c, addr,
+    ierr = access_ds75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'r');
   else if (what == 'Y')
-    ierr = access_DS75_details( global_fd_i2c, addr,
+    ierr = access_ds75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
-    ierr = access_DS75_details( global_fd_i2c, addr,
+    ierr = access_ds75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
@@ -241,7 +241,7 @@ struct {
 epicsExportAddress(dset,devAoRackTemp);
 
 
-/* initialization for ai record */
+/* initialization for ao record */
 static long init_record_ao(aoRecord *prec)
 {
   long status;
@@ -266,14 +266,14 @@ static long init_record_ao(aoRecord *prec)
     return S_db_badField;
   }
   else if (what == 'S')
-    status = access_DS75_details( global_fd_i2c, addr,
+    status = access_ds75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'r');
   else if (what == 'Y')
-    status = access_DS75_details( global_fd_i2c, addr,
+    status = access_ds75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'r');
   else if (what == 'C') {
     unsigned char cfg;
-    status = access_DS75_details( global_fd_i2c, addr,
+    status = access_ds75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'r');
     prec->val = (double)cfg;
   }
@@ -308,10 +308,10 @@ static long write_ao(aoRecord *prec)
   if (select_probe(istub) < 0)
     ierr = -1;
   else if (what == 'H')
-    ierr = access_DS75_details( global_fd_i2c, addr,
+    ierr = access_ds75_details( global_fd_i2c, addr,
                     &(prec->val), NULL, NULL, 'w');
   else if (what == 'L')
-    ierr = access_DS75_details( global_fd_i2c, addr,
+    ierr = access_ds75_details( global_fd_i2c, addr,
                     NULL, &(prec->val), NULL, 'w');
   else if (what == 'C') {
     unsigned char cfg;
@@ -319,7 +319,7 @@ static long write_ao(aoRecord *prec)
       ierr = 1;
     else {
       cfg = (unsigned char)(int)(0.5+prec->val);
-      ierr = access_DS75_details( global_fd_i2c, addr,
+      ierr = access_ds75_details( global_fd_i2c, addr,
                     NULL, NULL, &cfg, 'w');
     }
   }

@@ -15,6 +15,7 @@
 #include "devSup.h"
 #include "biRecord.h"
 #include "epicsExport.h"
+#include "errlog.h"
 
 #include "dev_gpio.h"
 
